@@ -11,7 +11,7 @@ type pawn = {
   moving: boolean,
 }
 
-interface User {
+class User {
 
 }
 
@@ -107,6 +107,8 @@ class Event extends Space {
 }
 
 export default function Home(props: { pawns: { [key: string]: pawn}, spaces: any[] }) {
+  const user = new User();
+
   const spaces: Space[] = props.spaces.map(space => {
     if (space.type === 'Start') return new Start();
     
@@ -126,7 +128,6 @@ export default function Home(props: { pawns: { [key: string]: pawn}, spaces: any
 
     return new Arrestment();
   });
-
 
   const [pawns, setPawns] = useState(props.pawns);
 
@@ -194,8 +195,10 @@ export default function Home(props: { pawns: { [key: string]: pawn}, spaces: any
     if (space instanceof Arrestment) return handleArrestment(pawn, space);
   }
 
+  const [moving, setMoving] = useState(false);
+
   const movePawn = async (pawn: pawn, steps: number, traveled = 0, lap = false): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 250));
 
     traveled++;
 
@@ -215,19 +218,42 @@ export default function Home(props: { pawns: { [key: string]: pawn}, spaces: any
 
     const pawnUpdate: pawn = {...pawn};
 
-    
-
     pawnUpdate.space = next;
 
     pawnUpdate.moving = next !== destination;
 
     setPawns({...pawns, [pawn.color]: pawnUpdate});
+    setMoving(pawnUpdate.moving);
 
     if (next !== destination) {
       return movePawn(pawn, steps, traveled, lap);
     }
 
     handleArrival(pawn, destination);
+  }
+
+  const [point, setPoint] = useState(12);
+  const [spinning, setSpinning] = useState(false);
+
+  const spinWheel = async () => {
+    setMoving(true);
+    setSpinning(true);
+
+    const number = Math.round(Math.random() * 11) + 1;
+    
+    setTimeout(() => {
+      setPoint(number);
+    }, 500);
+
+    setTimeout(() => {
+      setSpinning(false);
+    },  1250);
+    
+    setTimeout(() => {
+      console.log('steps: ', number);
+
+      movePawn(pawns.black, number);
+    }, 4000);
   }
 
   return (
@@ -239,7 +265,7 @@ export default function Home(props: { pawns: { [key: string]: pawn}, spaces: any
       </Head>
       
       <main className={styles.main}>
-        <h1 onClick={() => movePawn(pawns.black, 3)}>Barco Imobiliário</h1>
+        <button data-moving={moving} data-spinning={spinning} className={styles.compass} onClick={() => spinWheel()}><i className={styles.pointer} style={{ "--point": point } as React.CSSProperties} >Rolar</i></button>
         <div className={styles.pawns}>
           {
             Object.values(pawns).map((pawn, key) => (

@@ -8,14 +8,6 @@
     justify-items: center;
 }
 
-.main h1 {
-    grid-column: 2;
-    grid-row: 2;
-    z-index: 3;
-    text-align: center;
-    width: max-content;
-}
-
 .board, .pawns {
     grid-column: 2;
     grid-row: 2;
@@ -328,20 +320,181 @@
 }
 
 @keyframes pawn-moving {
-    from {
-        opacity: 0;
-    }
     to {
-        opacity: 1;
         rotate: 20deg;
     }
 }
 
+.pawn {
+    animation: pawn-moving 500ms ease-in-out infinite alternate forwards;
+}
+
 .pawn[data-moving=true] {
-    animation: pawn-moving 400ms ease-in-out infinite;
+    animation-play-state: running;
 }
 
 .pawn[data-moving=false] {
-    animation: none;
-    opacity: 1;
+    animation-play-state: paused;
+}
+
+/* compass */
+
+.compass {
+    grid-column: 2;
+    grid-row: 2;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 12rem;
+    height: 12rem;
+
+    --point: 0;
+
+    border-radius: 100%;
+}
+
+
+@keyframes spinning {
+    0% {
+        rotate: calc(var(--point) * 30deg);
+    }
+    25% {
+        rotate: calc(var(--point) * 35deg);
+    }
+    30% {
+        rotate: calc(var(--point) * 40deg);
+    }
+    35% {
+        rotate: calc(var(--point) * 35deg);
+    }
+    40% {
+        rotate: calc(var(--point) * 45deg);
+    }
+    50% {
+        rotate: calc(var(--point) * 15deg);
+    }
+    100% {
+        rotate: 900deg;
+    }
+}
+
+@keyframes stopping {
+    0% {
+        rotate: 3600deg;
+    }
+    10% {
+        rotate: -360deg;
+    }
+    12% {
+        rotate: 9deg;
+    }
+    16% {
+        rotate: 270deg;
+    }
+    18% {
+        rotate: 90deg;
+    }
+    20% {
+        rotate: 180deg;
+    }
+    25% {
+        rotate: calc(var(--point) * 31deg);
+    }
+    30% {
+        rotate: calc(var(--point) * 29deg);
+    }
+    40% {
+        rotate: calc(var(--point) * 30deg);
+    }
+    50% {
+        rotate: calc(var(--point) * 29deg);
+    }
+    60% {
+        rotate: calc(var(--point) * 31deg);
+    }
+    70% {
+        rotate: calc(var(--point) * 30deg);
+    }
+    80% {
+        rotate: calc(var(--point) * 31deg);
+    }
+    90% {
+        rotate: calc(var(--point) * 29deg);
+    }
+    100% {
+        rotate: calc(var(--point) * 30deg);
+    }
+}
+
+@keyframes steady {
+    0% {
+        rotate: calc(var(--point) * 30deg);
+    }
+    50% {
+        rotate: calc(var(--point) * 31deg);
+    }
+    100% {
+        rotate: calc(var(--point) * 29deg);
+    }
+}
+
+.compass .pointer {
+    position: relative;
+    display: block;
+    font-size: 0;
+    background-color: orange;
+    height: 2rem;
+    width: 2rem;
+    border-radius: 100%;
+}
+
+.compass .pointer::before {
+    content: attr(data-point);
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+
+    translate: -50% -50%;
+
+    height: 12rem;
+    width: 2rem;
+
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    background: linear-gradient(to bottom, maroon, maroon 50%, navy 50%, navy 100%);
+
+    z-index: -1;
+
+    transition: rotate 5000ms cubic-bezier(.1,1.1,1,1.1);
+}
+
+.compass * {
+    pointer-events: none;
+}
+
+.compass[data-moving=true] {
+    pointer-events: none;
+}
+
+.compass[data-moving=false] {
+    cursor: pointer;
+}
+
+.compass[data-spinning=true] .pointer::before {
+    animation: spinning 1250ms ease-in-out;
+}
+
+.compass[data-spinning=false] .pointer::before {
+    animation-name: stopping;
+    animation-duration: 10000ms;
+    animation-timing-function: ease-in-out;
+    animation-delay: 0ms;
+    animation-iteration-count: 1;
+    animation-direction: normal;
+    animation-fill-mode: forwards;
+}
+
+.compass[data-spinning=false][data-moving=false] .pointer::before {
+    animation: steady 1250ms cubic-bezier(.1,1,1,1.1) infinite alternate;   
 }
