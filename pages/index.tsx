@@ -1,114 +1,52 @@
 import Head from 'next/head';
-import Image from 'next/image';
 import { useState } from 'react';
 
 import styles from '../styles/index.module.css';
 
-type pawn = {
-  color: string,
-  space: number,
-  user: any,
-  moving: boolean,
-}
+import { useEffect } from 'react'
+import { io, Socket } from "socket.io-client";
 
-class User {
+import Pawn from '../models/Pawn';
+import User from '../models/User';
+import Space, {
+  Start,
+  Building,
+  Enterprise,
+  Event,
+  Taxes,
+  Payment,
+  Prison,
+  Vacation,
+  Arrestment,
+} from '../models/Spaces';
 
-}
+let socket!: Socket;
 
-enum SpaceTypes {
-  BUILDING,
-  ENTERPRISE,
-  EVENT,
-}
+export default function Home(props: { pawns: { [key: string]: Pawn}, spaces: any[] }) {
+  useEffect(() => { socketInitializer() }, [])
 
-abstract class Space {
-  id: number;
-  readonly name: string;
+  const socketInitializer = async () => {
+    await fetch('/api/socket');
+    socket = io();
 
-  constructor(id: number, name: string) {
-    this.id = id;
-    this.name = name;
+    socket.on('connect', () => {
+      console.log('connected');
+    });
+
+    socket.on('movePawn', (pawn: Pawn, destination) => {
+      movePawn(pawn, destination);
+    });
+
+    socket.on('handleLap', pawn => {
+      handleLap(pawn);
+    });
+
+    socket.on('handleArrival', ({pawn, destination}) => {
+      handleArrival(pawn, destination);
+    });
   }
-}
 
-class Start extends Space {
-  constructor() {
-    super(0, 'Início');
-  }
-}
-
-class Prison extends Space {
-  constructor() {
-    super(10, 'Prisão');
-  }
-}
-
-class Vacation extends Space {
-  constructor() {
-    super(20, 'Férias');
-  }
-}
-
-class Arrestment extends Space {
-  constructor() {
-    super(30, 'Camburão');
-  }
-}
-
-class Taxes extends Space {
-  constructor({ id }: { id: number }) {
-    super(id, 'Dia de pagar impostos');
-  }
-}
-
-class Payment extends Space {
-  constructor({ id }: { id: number }) {
-    super(id, 'Dia do pagamento');
-  }
-}
-
-abstract class Property extends Space {
-  owner: User | null = null;
-
-  constructor(id: number, name: string) {
-    super(id, name);
-  }
-}
-
-class Building extends Property {
-  houses: number = 0;
-  limit: number;
-  rent: number;
-  fee: number;
-
-  constructor({id, name, rent, limit = 5, fee = 10}: { id: number, name: string, rent: number, limit?: number, fee?: number }) {
-    super(id, name);
-
-    this.limit = limit;
-    this.rent = rent;
-    this.fee = fee;
-  }
-}
-
-class Enterprise extends Property {
-  price: number;
-
-  constructor({ id, name, price }: { id: number, name: string, price: number }) {
-    super(id, name);
-
-    this.price = price;
-  }
-}
-
-class Event extends Space {
-  constructor({ id }: { id: number }) {
-    super(id, 'Sorte ou Azar');
-  }
-}
-
-export default function Home(props: { pawns: { [key: string]: pawn}, spaces: any[] }) {
-  const user = new User();
-
+  
   const spaces: Space[] = props.spaces.map(space => {
     if (space.type === 'Start') return new Start();
     
@@ -130,52 +68,57 @@ export default function Home(props: { pawns: { [key: string]: pawn}, spaces: any
   });
 
   const [pawns, setPawns] = useState(props.pawns);
+  const [moving, setMoving] = useState(false);
 
-  const handleBuilding = (pawn: pawn, space: Building) => {
-    console.log('pawn:', pawn);
-    console.log('space:', space);
-  }
+  const user = new User(pawns.black);
 
-  const handleEnterprise = (pawn: pawn, space: Enterprise) => {
-    console.log('pawn:', pawn);
-    console.log('space:', space);
-  }
-  
-  const handleEvent = (pawn: pawn, space: Event) => {
-    console.log('pawn:', pawn);
-    console.log('space:', space);
-  }
-  
-  const handleTaxes = (pawn: pawn, space: Taxes) => {
-    console.log('pawn:', pawn);
-    console.log('space:', space);
-  }
-  
-  const handlePayment = (pawn: pawn, space: Payment) => {
-    console.log('pawn:', pawn);
-    console.log('space:', space);
-  }
-  
-  const handlePrison = (pawn: pawn, space: Prison) => {
-    console.log('pawn:', pawn);
-    console.log('space:', space);
-  }
-  
-  const handleVacation = (pawn: pawn, space: Vacation) => {
+  const handleBuilding = (pawn: Pawn, space: Building) => {
     console.log('pawn:', pawn);
     console.log('space:', space);
   }
 
-  const handleArrestment = (pawn: pawn, space: Arrestment) => {
+  const handleEnterprise = (pawn: Pawn, space: Enterprise) => {
+    console.log('pawn:', pawn);
+    console.log('space:', space);
+  }
+  
+  const handleEvent = (pawn: Pawn, space: Event) => {
+    console.log('pawn:', pawn);
+    console.log('space:', space);
+  }
+  
+  const handleTaxes = (pawn: Pawn, space: Taxes) => {
+    console.log('pawn:', pawn);
+    console.log('space:', space);
+  }
+  
+  const handlePayment = (pawn: Pawn, space: Payment) => {
+    console.log('pawn:', pawn);
+    console.log('space:', space);
+  }
+  
+  const handlePrison = (pawn: Pawn, space: Prison) => {
+    console.log('pawn:', pawn);
+    console.log('space:', space);
+  }
+  
+  const handleVacation = (pawn: Pawn, space: Vacation) => {
     console.log('pawn:', pawn);
     console.log('space:', space);
   }
 
-  const handleLap = (pawn: pawn) => {
+  const handleArrestment = (pawn: Pawn, space: Arrestment) => {
+    console.log('pawn:', pawn);
+    console.log('space:', space);
+  }
+
+  const handleLap = (pawn: Pawn) => {
     console.log('pawn:', pawn);
   }
 
-  const handleArrival = (pawn: pawn, destination: number) => {
+  const handleArrival = (pawn: Pawn, destination: number) => {
+    setMoving(false);
+
     const space: Space = spaces[destination];
     
     if (space instanceof Building) return handleBuilding(pawn, space);
@@ -195,47 +138,14 @@ export default function Home(props: { pawns: { [key: string]: pawn}, spaces: any
     if (space instanceof Arrestment) return handleArrestment(pawn, space);
   }
 
-  const [moving, setMoving] = useState(false);
-
-  const movePawn = async (pawn: pawn, steps: number, traveled = 0, lap = false): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 250));
-
-    traveled++;
-
-    const { space } = pawn;
-    const start = lap ? 0 : space;
-
-    let destination = start + steps;
-    let next = start + traveled;
-
-    if (next === 40) {
-      steps = destination = destination - 40;
-      next = 0;
-      traveled = 0;
-
-      lap = true;
-    }
-
-    const pawnUpdate: pawn = {...pawn};
-
-    pawnUpdate.space = next;
-
-    pawnUpdate.moving = next !== destination;
-
-    setPawns({...pawns, [pawn.color]: pawnUpdate});
-    setMoving(pawnUpdate.moving);
-
-    if (next !== destination) {
-      return movePawn(pawn, steps, traveled, lap);
-    }
-
-    handleArrival(pawn, destination);
+  const movePawn = (pawn: Pawn, destination: number) => {
+    setPawns({...pawns, [pawn.color]: {...pawn, space: destination}});
   }
 
   const [point, setPoint] = useState(12);
   const [spinning, setSpinning] = useState(false);
 
-  const spinWheel = async () => {
+  const spinWheel = async (pawn: Pawn) => {
     setMoving(true);
     setSpinning(true);
 
@@ -252,7 +162,10 @@ export default function Home(props: { pawns: { [key: string]: pawn}, spaces: any
     setTimeout(() => {
       console.log('steps: ', number);
 
-      movePawn(pawns.black, number);
+      socket.emit('wheelSpin', {
+        pawn,
+        steps: number
+      });
     }, 4000);
   }
 
@@ -265,7 +178,14 @@ export default function Home(props: { pawns: { [key: string]: pawn}, spaces: any
       </Head>
       
       <main className={styles.main}>
-        <button data-moving={moving} data-spinning={spinning} className={styles.compass} onClick={() => spinWheel()}><i className={styles.pointer} style={{ "--point": point } as React.CSSProperties} >Rolar</i></button>
+        <button
+          data-moving={moving}
+          data-spinning={spinning}
+          className={styles.compass}
+          onClick={() => spinWheel(pawns[user.pawn.color])}
+        >
+          <i className={styles.pointer} style={{ "--point": point } as React.CSSProperties}>Rolar</i>
+        </button>
         <div className={styles.pawns}>
           {
             Object.values(pawns).map((pawn, key) => (
@@ -325,40 +245,34 @@ export default function Home(props: { pawns: { [key: string]: pawn}, spaces: any
 }
 
 export async function getServerSideProps() {
-  const pawns: { [key: string]: pawn } =
+  const pawns: { [key: string]: Pawn } =
   {
     'black': {
-      user: {},
       color: 'black',
       space: 0,
       moving: false,
     },
     'red': {
-      user: {},
       color: 'red',
       space: 0,
       moving: false,
     },
     'green': {
-      user: {},
       color: 'green',
       space: 0,
       moving: false,
     },
     'blue': {
-      user: {},
       color: 'blue',
       space: 0,
       moving: false,
     },
     'yellow': {
-      user: {},
       color: 'yellow',
       space: 0,
       moving: false,
     },
     'white': {
-      user: {},
       color: 'white',
       space: 0,
       moving: false,
